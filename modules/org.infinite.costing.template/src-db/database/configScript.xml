@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+  <vector>
+    <versionInfo version="3.0.35650"/>
+    <columnDataChange tablename="AD_MODULE" columnname="VERSION" pkRow="7D3BA56796334A5BAB684FF9A370D36D">
+      <oldValue><![CDATA[0.0.2]]></oldValue>
+      <newValue><![CDATA[0.0.1]]></newValue>
+    </columnDataChange>
+    <columnDataChange tablename="AD_MODULE" columnname="VERSION" pkRow="845C24CA51E24460AC6DB3A1927FED02">
+      <oldValue><![CDATA[0.0.2]]></oldValue>
+      <newValue><![CDATA[0.0.1]]></newValue>
+    </columnDataChange>
+    <columnDataChange tablename="AD_MODULE_DEPENDENCY" columnname="STARTVERSION" pkRow="C46E688BC30F4A99A1439FF5001D779F">
+      <oldValue><![CDATA[0.0.2]]></oldValue>
+      <newValue><![CDATA[0.0.1]]></newValue>
+    </columnDataChange>
+  </vector>
