@@ -405,17 +405,17 @@ public class AssetLinearDepreciationMethodProcess extends DalBaseProcess {
             Amortization amortization = amortizationLine.getAmortization();
             boolean isAmortizationProcessed = false;
             if (amortization != null) {
-              isAmortizationProcessed = "Y".equals(amortization.getProcessed());
+              isAmortizationProcessed = amortization.isProcessed();
             }
             if (isAmortizationProcessed) {
               // Avoid a_amortizationline_trg trigger error
-              amortization.setProcessed("N");
+              amortization.setProcessed(false);
               OBDal.getInstance().save(amortization);
               OBDal.getInstance().flush();
             }
             amortizationLine.setAmortizationPercentage(proportionaldPercentage);
             if (isAmortizationProcessed) {
-              amortization.setProcessed("Y");
+              amortization.setProcessed(true);
               OBDal.getInstance().save(amortization);
             }
           }

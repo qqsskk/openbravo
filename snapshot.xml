@@ -1,0 +1,115 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!--
+*************************************************************************
+* The contents of this file are subject to the Openbravo  Public  License
+* Version  1.1  (the  "License"),  being   the  Mozilla   Public  License
+* Version 1.1  with a permitted attribution clause; you may not  use this
+* file except in compliance with the License. You  may  obtain  a copy of
+* the License at http://www.openbravo.com/legal/license.html
+* Software distributed under the License  is  distributed  on  an "AS IS"
+* basis, WITHOUT WARRANTY OF ANY KIND, either express or implied. See the
+* License for the specific  language  governing  rights  and  limitations
+* under the License.
+* The Original Code is Openbravo ERP.
+* The Initial Developer of the Original Code is Openbravo SLU
+* All portions are Copyright (C) 2009-2011 Openbravo SLU
+* All Rights Reserved.
+* Contributor(s):  ______________________________________.
+************************************************************************
+-->
+<project name="snapshot" default="snapshot" basedir=".">
+  <description>
+   This script creates and snapshot of Openbravo
+
+   * To create a snapshot, place this xml file in the Openbravo sources
+     and execute:
+     $ ant -f snapshot.xml
+
+   * To restore an snapshot,
+     - Remove the sources folder and unzip the archive file, e.g.:
+       $ rm -rf /path/to/OpenbravoERP
+       $ unzip openbravo-timestamp.zip -d /path/to/OpenbravoERP
+
+     - Move inside the Openbravo sources and run the restore target:
+       $ cd /path/to/OpenbravoERP
+       /path/to/OpenbravoERP $ ant -f snapshot.xml restore
+  </description>
+  <property environment="env" />
+  <property name="base.config" location="config" />
+  <property name="base.lib" location="lib" />
+  <property file="${base.config}/Openbravo.properties" />
+  <property name="fs" value="${file.separator}" />
+  <property name="host" value="db.bprlestari.com" />
+  <property name="port" value="65432" />
+  <property name="bk.file" value="${basedir}${fs}temp${fs}openbravo.backup" />
+  <property name="exclude" value="" />
+  <target name="snapshot" description="Creates an archive file (zip) with a database dump and the sources">
+    <echo message="Creating instance snapshot..." level="info" />
+    <echo message="Making temp folder..." level="info"/>
+    <echo message="basedir ${basedir}" />
+    <mkdir dir="${basedir}${fs}temp" />
+	<echo message="Creating a database backup..." level="info"/>
+	<exec executable="pg_dump" failonerror="true">
+	  <env key="PGUSER" value="${bbdd.systemUser}" />
+	  <env key="PGPASSWORD" value="${bbdd.systemPassword}" />
+	  <arg value="-v" />
+	  <arg value="-b" />
+	  <arg value="-Fc" />
+	  <arg value="-h${host}" />
+	  <arg value="-p${port}" />
+	  <arg value="-O" />
+	  <arg value="-f${bk.file}" />
+	  <arg value="${bbdd.sid}" />
+	</exec>
+	<echo message="Making a zip..." level="info" />
+    <tstamp>
+      <format property="filename" pattern="yyyy-MM-dd_HH-mm-ss"/>
+    </tstamp>
+	<zip destfile="${basedir}${fs}..${fs}${context.name}-${filename}.zip"
+	     basedir="${basedir}" excludes="${exclude}" encoding="UTF-8" />
+  </target>
+  <target name="check.backup">
+	<echo message="Checking if openbravo.backup file exists in ${basedir}${fs}temp folder..." level="info" />
+	<available file="${bk.file}" property="bk.exists" />
+  </target>
+  <target name="restore" depends="check.backup" if="bk.exists" description="Drops the database and restores the backup">
+	<echo message="Deleting the database ..." />
+    <sql driver="${bbdd.driver}" url="${bbdd.url}" userid="${bbdd.systemUser}" password="${bbdd.systemPassword}" onerror="abort" autocommit="true">
+      <classpath>
+        <fileset dir="${base.lib}">
+          <include name="**/*.jar">
+          </include>
+        </fileset>
+      </classpath>
+      <transaction>
+        DROP DATABASE IF EXISTS ${bbdd.sid};
+      </transaction>
+    </sql>
+    <echo message="Creating the database..." level="info" />
+    <sql driver="${bbdd.driver}" url="${bbdd.url}" userid="${bbdd.systemUser}" password="${bbdd.systemPassword}" onerror="abort" autocommit="true">
+      <classpath>
+        <fileset dir="${base.lib}">
+          <include name="**/*.jar">
+          </include>
+        </fileset>
+      </classpath>
+      <transaction>
+        CREATE DATABASE ${bbdd.sid}
+                  WITH ENCODING='UTF8'
+                  OWNER=${bbdd.user}
+                  TEMPLATE=template0;
+      </transaction>
+    </sql>
+	<echo message="Restoring the backup file..." level="info"/>
+	<exec executable="pg_restore" failonerror="true">
+	  <env key="PGUSER" value="${bbdd.systemUser}" />
+	  <env key="PGPASSWORD" value="${bbdd.systemPassword}" />
+	  <arg value="-v" />
+	  <arg value="-h${host}" />
+	  <arg value="-p${port}" />
+	  <arg value="-d${bbdd.sid}" />
+	  <arg value="-O" />
+	  <arg value="${bk.file}" />
+	</exec>
+  </target>
+</project>
