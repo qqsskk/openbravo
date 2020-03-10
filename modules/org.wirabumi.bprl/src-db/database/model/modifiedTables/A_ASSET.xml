@@ -1,0 +1,24 @@
+<?xml version="1.0"?>
+  <database name="MODIFIED TABLE A_ASSET">
+    <table name="A_ASSET" primaryKey="A_ASSET_KEY">
+      <column name="EM_BPRL_NOMORPEMBUKUAN" primaryKey="false" required="false" type="VARCHAR" size="255" autoIncrement="false">
+        <default/>
+        <onCreateDefault/>
+      </column>
+      <column name="EM_BPRL_ISINVENTARIS" primaryKey="false" required="true" type="CHAR" size="1" autoIncrement="false">
+        <default><![CDATA[N]]></default>
+        <onCreateDefault/>
+      </column>
+      <column name="EM_BPRL_ISDIPINJAM" primaryKey="false" required="true" type="CHAR" size="1" autoIncrement="false">
+        <default><![CDATA[N]]></default>
+        <onCreateDefault/>
+      </column>
+      <column name="EM_BPRL_PARENT_ID" primaryKey="false" required="false" type="VARCHAR" size="32" autoIncrement="false">
+        <default/>
+        <onCreateDefault/>
+      </column>
+      <foreign-key foreignTable="A_ASSET" name="EM_BPRL_ASSETPARENT_FK">
+        <reference local="EM_BPRL_PARENT_ID" foreign="A_ASSET_ID"/>
+      </foreign-key>
+    </table>
+  </database>

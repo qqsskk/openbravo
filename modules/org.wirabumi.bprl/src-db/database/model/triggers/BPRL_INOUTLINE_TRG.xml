@@ -1,0 +1,64 @@
+<?xml version="1.0"?>
+  <database name="TRIGGER BPRL_INOUTLINE_TRG">
+    <trigger name="BPRL_INOUTLINE_TRG" table="M_INOUTLINE" fires="before" insert="true" update="true" delete="false" foreach="row">
+      <body><![CDATA[
+    v_calcelmovementqty NUMBER;
+    v_faktorkali NUMBER;
+    v_bp_id varchar(32);
+    v_bpreturn_id varchar(32);
+    v_product_id varchar(32);
+    v_productreturn_id varchar(32);
+        
+BEGIN
+    
+    IF AD_isTriggerEnabled()='N' THEN RETURN;
+    END IF;
+
+
+    -- trigger defintion here:
+    /*
+     * mencegah shipment/receipt negatif tanpa cancel ID
+     * cek apakah movement qty <0
+ 	 * jika tidak, return
+ 	 * jika iya, cek apakah ada cancell id
+ 	 * jika tidak, maka exception
+ 	 * cek qty di cancell id, cek apakah faktor kali=-1
+ 	 * jika tidak, maka exception
+ 	 * jika iya, maka return
+     * */
+    
+    if :new.ad_client_id='0BB4BA036586421AB4BA6B4272B927A0' then --khusus BPR lestari
+      if (:new.movementqty<0) then
+        if :new.canceled_inoutline_id is null then
+          RAISE NO_DATA_FOUND ;
+        end if;
+        select movementqty into v_calcelmovementqty from m_inoutline where m_inoutline_id=:new.canceled_inoutline_id;
+        if (v_calcelmovementqty is null or v_calcelmovementqty=0) then
+          RAISE NO_DATA_FOUND ;
+        end if;
+        v_faktorkali =  v_calcelmovementqty/:new.movementqty;
+        if (v_faktorkali<>-1.0) then
+          RAISE NO_DATA_FOUND ;
+        end if;
+        select c_bpartner_id into v_bp_id
+        from m_inoutline where m_inoutline_id=:new.m_inoutline_id;
+        select c_bpartner_id into v_bpreturn_id
+        from m_inoutline where m_inoutline_id=:new.canceled_inoutline_id;
+        if (v_bp_id!=v_bpreturn_id) then
+          RAISE NO_DATA_FOUND ;
+        end if;
+        select m_product_id into v_product_id
+        from m_inoutline where m_inoutline_id=:new.m_inoutline_id;
+        select m_product_id into v_productreturn_id
+        from m_inoutline where m_inoutline_id=:new.canceled_inoutline_id;
+        if (v_product_id!=v_productreturn_id) then
+          RAISE NO_DATA_FOUND ;
+        end if;
+      end if;
+    end if;
+    
+    
+    END BPRL_INOUTLINE_TRG
+]]></body>
+    </trigger>
+  </database>

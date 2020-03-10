@@ -1,0 +1,9 @@
+<?xml version="1.0"?>
+  <database name="MODIFIED TABLE M_COSTING">
+    <table name="M_COSTING" primaryKey="M_COSTING_KEY">
+      <column name="EM_BPRL_AVAILABLEQTY" primaryKey="false" required="true" type="DECIMAL" autoIncrement="false">
+        <default><![CDATA[0]]></default>
+        <onCreateDefault/>
+      </column>
+    </table>
+  </database>
